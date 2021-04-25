@@ -1,0 +1,139 @@
+#include<p18f4550.inc>
+
+lp_cnt1	equ 0x00
+lp_cnt2 equ 0x01
+lp_cnt3	equ 0x02
+lp_cnt4	equ 0x03
+
+			org 0x00
+			goto start
+			org 0x08
+			retfie
+			org 0x18
+			retfie
+			
+;delay 0.2s
+
+dup_nop 	macro kk
+ 			variable i
+i = 0
+ 			while i < kk
+ 			nop
+i += 1
+			endw
+			endm
+
+delay0.2s 	movlw d'100'		; 0.2second delay for 20MHz
+ 			movwf lp_cnt2,A
+again1 		movlw d'100'
+ 			movwf lp_cnt1,A
+again2 		dup_nop d'100'
+ 			decfsz lp_cnt1,F,A
+ 			bra again2
+ 			decfsz lp_cnt2,F,A
+ 			bra again1
+ 			nop
+ 			return
+
+
+;delay 0.4s
+
+dup_nop1 	macro kkk
+ 			variable ii
+ii = 0
+ 			while ii < kkk
+ 			nop
+ii += 1
+			endw
+			endm
+
+delay0.4s 	movlw d'200'		; 0.4second delay for 20MHz
+ 			movwf lp_cnt4,A
+again3 		movlw d'100'
+ 			movwf lp_cnt3,A
+again4 		dup_nop1 d'100'
+ 			decfsz lp_cnt3,F,A
+ 			bra again4
+ 			decfsz lp_cnt4,F,A
+ 			bra again3
+ 			nop
+ 			return
+
+
+short       BSF PORTC,2,A		;set buzzer
+            CALL delay0.2s		;turn on for 0.2s
+            BCF PORTC,2,A		;turn off the buzzer
+			CALL delay0.2s		;turn on for 0.2s
+            return
+
+
+long        BSF PORTC,2,A		;set buzzer
+            CALL delay0.4s		;turn on for 0.4s
+            BCF PORTC,2,A		;turn off the buzzer
+			CALL delay0.2s		;turn on for 0.2s
+            return
+
+
+ALARM1		CALL long
+			CALL short
+			CALL long
+			CALL short
+			CALL long
+			CALL short
+			CALL long
+			CALL short
+			CALL long
+			CALL short
+			CALL long
+			CALL short
+			return
+
+
+ALARM2		CALL long
+			CALL long
+			CALL short
+			CALL long
+			CALL long
+			CALL short
+			CALL long
+			CALL long
+			CALL short
+			CALL long
+			CALL long
+			CALL short
+			return
+
+
+ALARM3		CALL short	
+			CALL short
+			CALL long
+			CALL short
+			CALL short
+			CALL long
+			CALL short
+			CALL short
+			CALL long
+			CALL short
+			CALL short
+			CALL long
+			return
+
+
+button		BTFSS PORTB,0,A
+			CALL ALARM1
+			BTFSS PORTB,1,A
+			CALL ALARM2
+			BTFSS PORTB,2,A
+			CALL ALARM3
+			return
+
+;START
+
+start		SETF TRISB,A
+			BCF  TRISC,2,A
+			BCF  PORTC,2,A
+
+check		CALL button
+			BRA check
+
+			end
